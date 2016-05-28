@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -cp target/classes:target/dependency/* WebApplication
+web: java $JAVA_OPTS -cp target/classes:target/dependency/* com.sharedmeals.WebApplication
