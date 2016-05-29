@@ -1,0 +1,40 @@
+.btn-fb{
+    color: #fff;
+    background-color:#3b5998;
+}
+.btn-fb:hover{
+    color: #fff;
+    background-color:#496ebc 
+}
+
+.btn-tw{
+    color: #fff;
+    background-color:#55acee;
+}
+.btn-tw:hover{
+    color: #fff;
+    background-color:#59b5fa;
+}
+
+.strike {
+    overflow: hidden;
+    text-align: center;
+}
+.strike:before,
+.strike:after {
+    background-color: #000;
+    content: "";
+    display: inline-block;
+    height: 1px;
+    position: relative;
+    vertical-align: middle;
+    width: 50%;
+}
+.strike:before {
+    right: 0.5em;
+    margin-left: -50%;
+}
+.strike:after {
+    left: 0.5em;
+    margin-right: -50%;
+}
