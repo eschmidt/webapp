@@ -1,0 +1,1 @@
+INSERT INTO app_user (id, email, password) VALUES (1, 'user@example.com', '$2a$06$zLaBv9xbsridcdggqBkMTOATxVCB68w8HO.4b3DgS8gzwub7RC7X.');

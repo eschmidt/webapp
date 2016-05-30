@@ -26,6 +26,7 @@
 
   <body>
 
+    <div class="container">
     <!-- Static navbar -->
     <nav class="navbar navbar-default navbar-static-top">
       <div class="container">
@@ -64,14 +65,47 @@
         </div><!--/.nav-collapse -->
       </div>
     </nav>
+    </div> <!-- container -->
 
 
     <div class="container">
-      <h2>Hello, ${user}!</h2>
-      <form action="<c:url value="/logout" />" method="post">
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign out</button>
+
+	<div class="row">
+	<div class="col-md-4"></div>
+	<div class="col-md-4">
+	
+	  <c:if test="${param.error ne null}">
+	    Invalid email address or password
+	  </c:if>
+	  <c:if test="${param.logout ne null}">
+	    You have been logged out
+	  </c:if>
+	  
+	  <h2>Login via</h2>
+	  <div class="social-buttons">
+	    <a href="#" class="btn btn-lg btn-block btn-fb"><i class="fa fa-facebook"></i> Facebook</a>
+	    <a href="#" class="btn btn-lg btn-block btn-tw"><i class="fa fa-twitter"></i> Twitter</a>
+	  </div>
+	  <br /><div class="strike">or</div><br />
+      <form class="form-signin" action="<c:url value="/login" />" method="post">
+        <label for="inputEmail" class="sr-only">username</label>
+        <input type="email" id="inputEmail" name="username" class="form-control" placeholder="Email Address" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+        <label><input type="checkbox" value="remember-me"> Remember me</label>
+         | <a href="">Forgot password?</a>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
       </form>
+      
+      <br />
+      <div class="bottom text-center">
+	    Don't have an account? <a href="#"><b>Sign up &gt;&gt;</b></a>
+	  </div>
+    </div> <!-- col -->
+    <div class="col-md-4"></div>
+    </div> <!-- row -->
+      
     </div><!-- /.container -->
 
 
