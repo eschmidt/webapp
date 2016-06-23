@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorator="layout" lang="en">
+
+  <head>
+     <title>Who Am I?</title>
+  </head>
+
+  <body>
+    <div class="container" layout:fragment="content">
+      Hello, <p id="user" th:text="${email}">User</p>
+    </div><!-- /.container -->
+  </body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorator="layout" lang="en">
+  <head>
+    <title>Sign up</title>
+  </head>
+
+  <body>
+
+    <div class="container" layout:fragment="content">
+	  
+	  <form action="#" th:action="@{/user/register}" th:object="${user}" method="post">
+        <table>
+        <tr>
+        <td><label for="inputEmail" class="sr-only">Email Address</label></td>
+        <td><input th:field="*{email}" type="email" id="inputEmail" name="email" class="form-control" placeholder="Email Address" required="required" autofocus="autofocus" /></td>
+        <td th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</td>
+        </tr>
+        
+        <tr>
+        <td><label for="inputPassword" class="sr-only">Password</label></td>
+        <td><input th:field="*{password}" type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required="required" /></td>
+        <td th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</td>
+        </tr>
+
+        <tr>
+        <td><label for="inputPasswordConf" class="sr-only">Password</label></td>
+        <td><input th:field="*{passwordConf}" type="password" id="inputPasswordConf" name="passwordConf" class="form-control" placeholder="Confirm Password" required="required" /></td>
+        <td th:if="${#fields.hasErrors('passwordConf')}" th:errors="*{passwordConf}">PasswordConf Error</td>
+        </tr>
+        </table>
+        
+        <br />
+        
+        <button id="registerSubmit" class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+      </form>
+    </div><!-- /.container -->
+  </body>
+</html>

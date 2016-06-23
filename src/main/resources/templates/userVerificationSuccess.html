@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org" 
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorator="layout" lang="en">
+
+  <head>
+     <title>Login</title>
+  </head>
+
+  <body>
+    <div class="container" layout:fragment="content">
+      <p th:if="${param.error ne null}" th:text="${param.error}">error</p>
+	  
+      <p>This user has been successfully registered.</p>
+    </div><!-- /.container -->
+  </body>
+</html>

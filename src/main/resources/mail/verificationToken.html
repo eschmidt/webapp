@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="utf-8"></meta>
+    <title>Verification Token</title>
+  </head>
+
+  <body>
+    <p>Hello!  Thank you for registering with us!</p>
+    
+    <p>To complete your registration, please click the following link to verify your email address.</p>
+    
+    <p><a href="#" th:href="${'http://localhost:8080/user/verify?token=' + token}" th:text="${'http://localhost:8080/user/verify?token=' + token}">URL</a></p>
+    
+    <p>Thank you,<br />
+    <em>mgmt</em></p>
+  </body>
+</html>
