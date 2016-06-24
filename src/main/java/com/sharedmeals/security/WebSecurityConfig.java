@@ -1,9 +1,12 @@
 package com.sharedmeals.security;
 
-import java.util.HashSet;
-import java.util.Set;
+import javax.servlet.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -13,15 +16,19 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.thymeleaf.spring4.SpringTemplateEngine;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
+import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
-	private TemplateResolver servletContextTemplateResolver;
+	private OAuth2ClientContext oauth2ClientContext;
 	
 	@Autowired
 	private UserDetailsService userService;
@@ -29,6 +36,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
+			.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class)
 			.authorizeRequests()
 				.antMatchers(
 						"/",
@@ -54,6 +62,34 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		auth.userDetailsService(this.userService).passwordEncoder(passwordEncoder());
 	}
 	
+	public Filter ssoFilter() {
+		OAuth2ClientAuthenticationProcessingFilter facebookFilter = new OAuth2ClientAuthenticationProcessingFilter("/login/facebook");
+		OAuth2RestTemplate facebookTemplate = new OAuth2RestTemplate(facebookClient(), oauth2ClientContext);
+		facebookFilter.setRestTemplate(facebookTemplate);
+		facebookFilter.setTokenServices(new UserInfoTokenServices(facebookResource().getUserInfoUri(), facebookClient().getClientId()));
+		return facebookFilter;
+	}
+	
+	@Bean
+	@ConfigurationProperties("facebook.client")
+	public OAuth2ProtectedResourceDetails facebookClient() {
+		return new AuthorizationCodeResourceDetails();
+	}
+	
+	@Bean
+	@ConfigurationProperties("facebook.resource")
+	public ResourceServerProperties facebookResource() {
+		return new ResourceServerProperties();
+	}
+	
+	@Bean
+	public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
+		FilterRegistrationBean registration = new FilterRegistrationBean();
+		registration.setFilter(filter);
+		registration.setOrder(-100);
+		return registration;
+	}
+	
 	@Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -63,42 +99,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public PasswordValidator passwordValidator() {
 		PasswordValidator passwordValidator = new PasswordValidator();
 		return passwordValidator;
-	}
-	
-	/*
-	@Bean
-	public TemplateResolver templateResolver() {
-	    TemplateResolver resolver = new ServletContextTemplateResolver();
-	    //resolver.setPrefix("/WEB-INF/views/");
-	    resolver.setPrefix("/templates/");
-	    resolver.setSuffix(".html");
-	    resolver.setCharacterEncoding("UTF-8");
-	    resolver.setTemplateMode("HTML5");
-	    resolver.setOrder(2);
-	    return resolver;
-	}
-	*/
-
-	@Bean
-	public TemplateResolver emailTemplateResolver() {
-	    TemplateResolver resolver = new ClassLoaderTemplateResolver();
-	    resolver.setPrefix("mail/");
-	    resolver.setSuffix(".html");
-	    resolver.setTemplateMode("HTML5");
-	    resolver.setCharacterEncoding("UTF-8");
-	    resolver.setOrder(1);
-	    return resolver;
-	}
-
-	@Bean
-	public SpringTemplateEngine templateEngine() {
-	    final SpringTemplateEngine engine = new SpringTemplateEngine();
-	    final Set<TemplateResolver> templateResolvers = new HashSet<TemplateResolver>();
-	    servletContextTemplateResolver.setOrder(2);
-	    templateResolvers.add(emailTemplateResolver());
-	    templateResolvers.add(servletContextTemplateResolver);
-	    //templateResolvers.add(templateResolver());
-	    engine.setTemplateResolvers(templateResolvers);
-	    return engine;
 	}
 }
