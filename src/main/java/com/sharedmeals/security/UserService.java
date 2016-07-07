@@ -1,5 +1,6 @@
 package com.sharedmeals.security;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -54,30 +55,38 @@ public class UserService implements UserDetailsService {
 	}
 
 	@Override
-	public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
-		User user = userRepository.findOneByEmail(email);
+	public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
+		User user = userRepository.findOneByUsername(username);
 		
 		if (user == null) {
-			throw new UsernameNotFoundException("Email address " + email + " not found");
+			throw new UsernameNotFoundException("User " + username + " not found");
 		}
 		
 		if (!user.isEnabled()) {
-			throw new UsernameNotFoundException("User with email address " + email + " not enabled");
+			throw new UsernameNotFoundException("User " + username + " not enabled");
 		}
 		
 		String password = user.getPassword();
 		
 		List<GrantedAuthority> auth = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
 		
-		return new org.springframework.security.core.userdetails.User(email, password, auth);
+		return new org.springframework.security.core.userdetails.User(username, password, auth);
+	}
+	
+	public User loadCurrentUser(Principal principal) {
+		if (principal == null) {
+			return null;
+		}
+		
+		return userRepository.findOneByUsername(principal.getName());
 	}
 
 	public User createUser(final String email, final String password) throws DuplicateEmailException {
-		User user = userRepository.findOneByEmail(email);
+		User user = userRepository.findOneByUsername(email);
 		
 		if (user != null) {
 			if (user.isEnabled()) {
-				throw new DuplicateEmailException("User with email address " + email + " already exists");
+				throw new DuplicateEmailException("User " + email + " already exists");
 			} else {
 				// user is trying to register again?  update their verification token
 				VerificationToken token = verificationTokenRepository.findOneByUser(user);
@@ -87,7 +96,9 @@ public class UserService implements UserDetailsService {
 			}
 		} else {
 			user = new User();
+			user.setDisplayName(email);
 			user.setEmail(email);
+			user.setUsername(email);
 		}
 		
 		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -100,6 +111,10 @@ public class UserService implements UserDetailsService {
 		sendVerificationEmail(email, token);
 		
 		return user;
+	}
+	
+	public User createUser(User user) {
+		return userRepository.save(user);
 	}
 	
 	private String createVerificationToken(final User user) {
@@ -143,7 +158,7 @@ public class UserService implements UserDetailsService {
 		VerificationToken token = verificationTokenRepository.findOneByToken(userToken);
 		
 		if (token != null) {
-			User user = userRepository.findOneByEmail(token.getUser().getEmail());
+			User user = userRepository.findOneByUsername(token.getUser().getEmail());
 			if (user != null && token.getExpires().isAfter(LocalDateTime.now())) {
 				user.setEnabled(true);
 				userRepository.save(user);

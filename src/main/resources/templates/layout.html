@@ -63,7 +63,12 @@
            <ul class="nav navbar-nav navbar-right">
              <li><a href="../navbar/">Default</a></li>
              <li class="active"><a href="./">Static top <span class="sr-only">(current)</span></a></li>
-             <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+             <li>
+             	<form method="POST" th:action="@{/logout}">
+                	<input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                    <button>Logout</button>
+                </form>
+             </li>
            </ul>
          </div><!--/.nav-collapse -->
        </div>

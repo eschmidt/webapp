@@ -25,6 +25,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -37,6 +38,8 @@ public class SecurityIntegrationTest extends DriverBase {
 	
 	private final static String TEST_URL = "http://localhost:9000";
 	
+	private final static int PAGELOAD_TIMEOUT = 10;
+	
 	private final static String BAD_EMAIL = "bad@test.com";
 	
 	private final static String GOOD_EMAIL = "good@test.com";
@@ -44,6 +47,15 @@ public class SecurityIntegrationTest extends DriverBase {
 	private final static String PASSWORD = "test";
 	
 	private final static String TOKEN_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+	
+	@Value("${test.facebook.email}")
+	private String FACEBOOK_EMAIL;
+	
+	@Value("${test.facebook.password}")
+	private String FACEBOOK_PASSWORD;
+	
+	@Value("${test.facebook.displayName}")
+	private String FACEBOOK_NAME;
 	
 	@SuppressWarnings("unused")
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -77,7 +89,7 @@ public class SecurityIntegrationTest extends DriverBase {
         driver.findElement(By.id("inputPassword")).sendKeys(PASSWORD);
         driver.findElement(By.id("loginSubmit")).click();
         
-        (new WebDriverWait(driver, 10)).until(
+        (new WebDriverWait(driver, PAGELOAD_TIMEOUT)).until(
         	ExpectedConditions.textToBePresentInElementLocated(By.id("error"), "Invalid Email or Password")
         );
     }
@@ -102,7 +114,7 @@ public class SecurityIntegrationTest extends DriverBase {
         driver.findElement(By.id("inputPassword")).sendKeys(PASSWORD);
         driver.findElement(By.id("loginSubmit")).click();
         
-        (new WebDriverWait(driver, 10)).until(
+        (new WebDriverWait(driver, PAGELOAD_TIMEOUT)).until(
         	ExpectedConditions.textToBePresentInElementLocated(By.id("error"), "Invalid Email or Password")
         );
     }
@@ -119,7 +131,7 @@ public class SecurityIntegrationTest extends DriverBase {
         driver.findElement(By.id("registerSubmit")).click();
         
         // verify an email was sent with a verification code
-        assertTrue(smtpServer.waitForIncomingEmail(5000, 1));
+        assertTrue(smtpServer.waitForIncomingEmail(PAGELOAD_TIMEOUT * 1000, 1));
         Message[] messages = smtpServer.getReceivedMessages();
         assertEquals(1, messages.length);
         
@@ -129,7 +141,7 @@ public class SecurityIntegrationTest extends DriverBase {
         String tokenFromEmail = (m.find()) ? m.group(1) : null;
         
         // simulate the user clicking the verification link from their email
-        User user = userRepository.findOneByEmail(GOOD_EMAIL);
+        User user = userRepository.findOneByUsername(GOOD_EMAIL);
         VerificationToken token = verificationTokenRepository.findOneByUser(user);
         assertEquals(token.getToken(), tokenFromEmail);
         driver.get(TEST_URL + "/user/verify?token=" + token.getToken());
@@ -137,8 +149,39 @@ public class SecurityIntegrationTest extends DriverBase {
         // access a page that requires authentication to verify that we are now logged in successfully
         driver.get(TEST_URL + "/user/whoami");
         
-        (new WebDriverWait(driver, 10)).until(
-        	ExpectedConditions.textToBePresentInElementLocated(By.id("user"), GOOD_EMAIL)
+        (new WebDriverWait(driver, PAGELOAD_TIMEOUT)).until(
+        	ExpectedConditions.textToBePresentInElementLocated(By.id("username"), GOOD_EMAIL)
+        );
+        
+        (new WebDriverWait(driver, PAGELOAD_TIMEOUT)).until(
+            ExpectedConditions.textToBePresentInElementLocated(By.id("displayName"), GOOD_EMAIL)
+        );
+    }
+    
+    @Test
+    public void loginViaFacebook() throws Exception {
+    	WebDriver driver = getDriver();
+    	
+    	// make sure the user is not already logged in
+    	driver.manage().deleteAllCookies();
+    	
+    	// try to access a secured URL to verify we are not logged in yet
+    	driver.get(TEST_URL + "/user/whoami");
+    	
+    	(new WebDriverWait(driver, PAGELOAD_TIMEOUT)).until(
+    		ExpectedConditions.elementToBeClickable(By.id("loginFacebook"))
+    	);
+    	
+    	// login by clicking the facebook button
+    	driver.findElement(By.id("loginFacebook")).click();
+    	
+    	// login to facebook with our test user
+    	driver.findElement(By.id("email")).sendKeys(FACEBOOK_EMAIL);
+    	driver.findElement(By.id("pass")).sendKeys(FACEBOOK_PASSWORD);
+    	driver.findElement(By.id("loginbutton")).click();
+    	
+    	(new WebDriverWait(driver, PAGELOAD_TIMEOUT)).until(
+            ExpectedConditions.textToBePresentInElementLocated(By.id("displayName"), FACEBOOK_NAME)
         );
     }
 }

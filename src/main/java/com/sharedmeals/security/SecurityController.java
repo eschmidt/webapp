@@ -1,7 +1,6 @@
 package com.sharedmeals.security;
 
 import java.security.Principal;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,7 +40,7 @@ public class SecurityController {
 	}
 	
 	@RequestMapping("/login")
-	public String login(Map<String, Object> model) {
+	public String login(Model model) {
 		return "login";
 	}
 	
@@ -54,7 +53,6 @@ public class SecurityController {
 	
 	@RequestMapping(value = "/user/register", method = RequestMethod.POST)
 	public String create(Model model, @Validated UserForm user, BindingResult result) {
-		
 		if (result.hasErrors()) {
 			return createForm(model, user);
 		}
@@ -89,7 +87,10 @@ public class SecurityController {
 	
 	@RequestMapping(value = "/user/whoami")
 	public String whoami(Model model, Principal principal) {
-		model.addAttribute("email", principal.getName());
+		User user = userService.loadCurrentUser(principal);
+		
+		model.addAttribute("username", principal.getName());
+		model.addAttribute("user", user);
 		
 		return "whoami";
 	}

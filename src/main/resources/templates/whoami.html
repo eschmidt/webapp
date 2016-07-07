@@ -9,6 +9,8 @@
     </head>
     
     <div layout:fragment="content">
-      Hello, <p id="user" th:text="${email}">User</p>
+      Hello, <p id="username" th:text="${username}">username</p>
+      Email: <p id="email" th:text="${user.email}">email@example.com</p>
+      Display Name: <p id="displayName" th:text="${user.displayName}">First Last</p>
     </div><!-- /.container -->
 </html>

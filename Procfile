@@ -1,1 +1,12 @@
-web: java $JAVA_OPTS -Dspring.profiles.active=prod -Dserver.port=$PORT -cp target/classes:target/dependency/* com.sharedmeals.WebApplication
+web: java $JAVA_OPTS \
+	-Dspring.profiles.active=prod \
+	-Dserver.port=$PORT \
+	-Dspring.datasource.driverClassName="$DATASOURCE_DRIVER" \
+	-Dspring.datasource.url="$DATASOURCE_URL" \
+	-Dspring.datasource.username="$DATASOURCE_USERNAME" \
+	-Dspring.datasource.password="$DATASOURCE_PASSWORD" \
+	-Dspring.jpa.database-platform-"$DATASOURCE_DIALECT" \
+	-Dspring.mail.host="$SMTP_HOST" \
+	-Dspring.mail.username="$SMTP_USERNAME" \
+	-Dspring.mail.password="$SMTP_PASSWORD" \
+	-cp target/classes:target/dependency/* com.sharedmeals.WebApplication

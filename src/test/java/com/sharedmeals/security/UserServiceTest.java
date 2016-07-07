@@ -63,11 +63,12 @@ public class UserServiceTest {
 	@Test
 	public void testVerifyUserEmail() {
 		// test case setup
-		User mockUser = new User(EMAIL);
+		User mockUser = new User();
+		mockUser.setEmail(EMAIL);
 		mockUser.setEnabled(false);
 		VerificationToken mockToken = new VerificationToken(mockUser, "token", LocalDateTime.now().plusDays(1));
 		
-		when(userRepository.findOneByEmail(EMAIL)).thenReturn(mockUser);
+		when(userRepository.findOneByUsername(EMAIL)).thenReturn(mockUser);
 		when(verificationTokenRepository.findOneByToken(mockToken.getToken())).thenReturn(mockToken);
 		
 		// verify the user is not enabled before verification
